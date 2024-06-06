@@ -1,4 +1,4 @@
-# Interactive Memory Game using Circuit Playground Express
+# THE MEMORY GAME
 
 ## Description
 This is a memory sequence game using the Circuit Playground Express (CPX). The game starts with all pixels lit up in white. When the player is ready, they use the switch to start the game. The game follows a "ready, set, go" sequence, the same as a race car start. The CPX will then light up a random sequence of pixel locations, followed by a rising melody for each LED being lit. As the player's level increases, the number of pixels in the sequence also increases. The player must memorize and replicate the sequence using the buttons on the CPX. Correct sequences result in positive feedback with green lights, a nice tone, and the score increasing by 1. If the player guesses incorrectly, the game shows red lights, plays a loser tone followed by a voice saying "LOSER HAHA," and resets the score to 0. The game can be reset using the switch.
