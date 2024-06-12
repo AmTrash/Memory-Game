@@ -28,20 +28,20 @@ void setup() {
   Serial.begin(9600);
   CircuitPlayground.begin();
   
-  attachInterrupt(digitalPinToInterrupt(7), switchh, CHANGE);
-  
+  attachInterrupt(digitalPinToInterrupt(7), switchh, CHANGE); // Attach interrupt to the switch to flip the game state
+
   CircuitPlayground.setAccelRange(LIS3DH_RANGE_4_G);
-  CircuitPlayground.setAccelTap(1, CLICKTHRESHHOLD);
-  attachInterrupt(digitalPinToInterrupt(CPLAY_LIS3DH_INTERRUPT), tapTime, FALLING);
+  CircuitPlayground.setAccelTap(1, CLICKTHRESHHOLD); // Set accelerometer for tap detection
+  attachInterrupt(digitalPinToInterrupt(CPLAY_LIS3DH_INTERRUPT), tapTime, FALLING); // Attach interrupt to the tap sensor
 
-  randomSeed(analogRead(A3));
+  randomSeed(analogRead(A3)); // Because true randomness is overrated
 
-  setAllLEDs(255, 255, 255);
+  setAllLEDs(255, 255, 255); // Start with all LEDs in white because why not?
 }
 
 void loop() {
   if (intFlag) {
-    delay(20);
+    delay(20); // Chill for a bit to debounce the switch
     intFlag = 0;
   }
   
@@ -53,16 +53,17 @@ void loop() {
 
   handleButtonPresses();
 
-  delay(100);
+  delay(100); // Slow down, buddy!
 }
 
 void idleGame() {
-  setAllLEDs(255, 255, 255);
+  setAllLEDs(255, 255, 255); // Doing nothing but looking pretty
 }
 
 void gameStart() {
   Serial.println("Game Start State");
 
+  // Ready, Set, Go sequence with matching tunes
   setAllLEDs(255, 255, 0);
   CircuitPlayground.playTone(440, 500);
   if (!gameState) return;
@@ -79,7 +80,7 @@ void gameStart() {
   delay(200);
 
   while (gameState) {
-    CircuitPlayground.clearPixels();
+    CircuitPlayground.clearPixels(); // Clean slate for the new round
     generateSequence(level);
     displaySequence(level);
 
@@ -88,30 +89,31 @@ void gameStart() {
     currentColor = 0;
     highlightCurrentLED(currentLED);
 
-    roundDelay.start(10000, AsyncDelay::MILLIS); // Start 10-second timer
-    speechDelay.start(1000, AsyncDelay::MILLIS); // Start speech timer
+    roundDelay.start(10000, AsyncDelay::MILLIS); // 10-second timer
+    speechDelay.start(1000, AsyncDelay::MILLIS); // 1-second speech timer
 
     while (userIndex < level && gameState) {
       handleButtonPresses();
       delay(100);
 
       if (roundDelay.isExpired()) {
-        incorrectSequenceFeedback();
+        incorrectSequenceFeedback(); // Time's up! Better luck next time
         gameState = false;
         break;
       }
-      // Delete here if you wanna get rid of this stupid speech thing that messes with the audio
+
+      // Countdown logic to keep the tension high
       unsigned long remainingTime = roundDelay.getDelay() - roundDelay.getDuration();
       int timerSecond = remainingTime / 1000;
 
       if (speechDelay.isExpired()) {
         speechDelay.restart();
         if (timerSecond == 13) {
-          CircuitPlayground.speaker.say(spTHREE);
+          CircuitPlayground.speaker.say(spTHREE); // Dramatic "3"
         } else if (timerSecond == 12) {
-          CircuitPlayground.speaker.say(spTWO);
+          CircuitPlayground.speaker.say(spTWO); // Dramatic "2"
         } else if (timerSecond == 11) {
-          CircuitPlayground.speaker.say(spONE);
+          CircuitPlayground.speaker.say(spONE); // Dramatic "1"
         }
       }
     }
@@ -120,7 +122,7 @@ void gameStart() {
       correctSequenceFeedback();
       delay(1000);
       level++;
-      roundDelay.start(10000, AsyncDelay::MILLIS); // Reset timer to 10 seconds for the next level
+      roundDelay.start(10000, AsyncDelay::MILLIS); // Reset timer for the next level
     } else if (gameState) {
       incorrectSequenceFeedback();
       break;
@@ -131,7 +133,7 @@ void gameStart() {
 
 void generateSequence(int level) {
   for (int i = 0; i < level; i++) {
-    sequence[i] = (random(0, 10) * 10) + random(0, 3);
+    sequence[i] = (random(0, 10) * 10) + random(0, 3); // Random LED and color combo
   }
 }
 
@@ -140,7 +142,7 @@ void displaySequence(int level) {
     int led = sequence[i] / 10;
     int color = sequence[i] % 10;
     setLEDColor(led, color);
-    CircuitPlayground.playTone(440 + 100 * i, 500);
+    CircuitPlayground.playTone(440 + 100 * i, 500); // Rising melody for each LED
     delay(500);
     CircuitPlayground.setPixelColor(led, 0, 0, 0);
     delay(250);
@@ -150,10 +152,10 @@ void displaySequence(int level) {
 bool checkUserSequence(int level) {
   for (int i = 0; i < level; i++) {
     if (userSequence[i] != sequence[i]) {
-      return false;
+      return false; // Oops, player messed up
     }
   }
-  return true;
+  return true; // Nailed it!
 }
 
 void setAllLEDs(int red, int green, int blue) {
@@ -165,22 +167,22 @@ void setAllLEDs(int red, int green, int blue) {
 void setLEDColor(int index, int color) {
   switch (color) {
     case 0:
-      CircuitPlayground.setPixelColor(index, 0, 255, 0);
+      CircuitPlayground.setPixelColor(index, 0, 255, 0); // Green
       break;
     case 1:
-      CircuitPlayground.setPixelColor(index, 0, 0, 255);
+      CircuitPlayground.setPixelColor(index, 0, 0, 255); // Blue
       break;
     case 2:
-      CircuitPlayground.setPixelColor(index, 255, 0, 0);
+      CircuitPlayground.setPixelColor(index, 255, 0, 0); // Red
       break;
   }
 }
 
 void highlightCurrentLED(int led) {
   if (userColor[led] == -1) {
-    CircuitPlayground.setPixelColor(led, 255, 255, 255);
+    CircuitPlayground.setPixelColor(led, 255, 255, 255); // Highlight in white
   } else {
-    setLEDColor(led, userColor[led]);
+    setLEDColor(led, userColor[led]); // Use the already selected color
   }
 }
 
@@ -190,7 +192,7 @@ void switchh() {
   userIndex = 0;
   level = 1;
   clearUserSequence();
-  setAllLEDs(255, 255, 255);
+  setAllLEDs(255, 255, 255); // Back to chilling mode
 }
 
 void clearUserSequence() {
@@ -203,12 +205,12 @@ void clearUserSequence() {
 void leftButtonPress() {
   if (gameState) {
     if (userColor[currentLED] == -1) {
-      CircuitPlayground.setPixelColor(currentLED, 0, 0, 0);
+      CircuitPlayground.setPixelColor(currentLED, 0, 0, 0); // Turn off the LED
     } else {
-      setLEDColor(currentLED, userColor[currentLED]);
+      setLEDColor(currentLED, userColor[currentLED]); // Restore the color
     }
-    currentLED = (currentLED + 1) % 10;
-    highlightCurrentLED(currentLED);
+    currentLED = (currentLED + 1) % 10; // Move to the next LED
+    highlightCurrentLED(currentLED); // Highlight the new LED
   }
 }
 
@@ -219,12 +221,12 @@ void rightButtonPress() {
 }
 
 void tapTime() {
-  currentColor = (currentColor + 1) % 3;
+  currentColor = (currentColor + 1) % 3; // Cycle through colors
   setLEDColor(currentLED, currentColor);
 }
 
 void selectCurrentPixel() {
-  CircuitPlayground.speaker.end();
+  CircuitPlayground.speaker.end(); // End any speech before selecting
   userSequence[userIndex] = currentLED * 10 + currentColor;
   userColor[currentLED] = currentColor;
   Serial.print("Selected Pixel: ");
@@ -235,11 +237,11 @@ void selectCurrentPixel() {
   userIndex++;
   if (userIndex < level) {
     currentLED = 0;
-    highlightCurrentLED(currentLED);
+    highlightCurrentLED(currentLED); // Highlight the next LED
   }
 
   if (level >= 2) {
-    CircuitPlayground.playTone(500, 100);
+    CircuitPlayground.playTone(500, 100); // Beep beep, selected!
     delay(100);
     CircuitPlayground.playTone(500, 100);
   }
@@ -247,8 +249,8 @@ void selectCurrentPixel() {
 
 void correctSequenceFeedback() {
   for (int i = 0; i < 2; i++) {
-    setAllLEDs(0, 255, 0);
-    CircuitPlayground.playTone(523, 200);
+    setAllLEDs(0, 255, 0); // Green for success
+    CircuitPlayground.playTone(523, 200); // Happy tone
     delay(200);
     setAllLEDs(0, 0, 0);
     delay(200);
@@ -258,9 +260,9 @@ void correctSequenceFeedback() {
 }
 
 void incorrectSequenceFeedback() {
-  CircuitPlayground.speaker.end();
-  setAllLEDs(255, 0, 0);
-  CircuitPlayground.playTone(100, 1000);
+  CircuitPlayground.speaker.end(); // End any speech before the loser feedback
+  setAllLEDs(255, 0, 0); // Red for fail
+  CircuitPlayground.playTone(100, 1000); // Sad tone
   Serial.println("LOSER HAHA");
   delay(1000);
   CircuitPlayground.clearPixels();
@@ -272,11 +274,11 @@ void incorrectSequenceFeedback() {
 void handleButtonPresses() {
   if (CircuitPlayground.leftButton()) {
     leftButtonPress();
-    while (CircuitPlayground.leftButton());
+    while (CircuitPlayground.leftButton()); // Wait until button is released
   }
 
   if (CircuitPlayground.rightButton()) {
     rightButtonPress();
-    while (CircuitPlayground.rightButton());
+    while (CircuitPlayground.rightButton()); // Wait until button is released
   }
 }
