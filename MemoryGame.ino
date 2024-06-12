@@ -36,12 +36,12 @@ void setup() {
 
   randomSeed(analogRead(A3)); // Because true randomness is overrated
 
-  setAllLEDs(255, 255, 255); // Start with all LEDs in white because why not?
+  setAllLEDs(20, 28, 107); // Start with all LEDs in white because why not?
 }
 
 void loop() {
   if (intFlag) {
-    delay(20); // Chill for a bit to debounce the switch
+    delay(20); 
     intFlag = 0;
   }
   
@@ -53,11 +53,11 @@ void loop() {
 
   handleButtonPresses();
 
-  delay(100); // Slow down, buddy!
+  delay(100); 
 }
 
 void idleGame() {
-  setAllLEDs(255, 255, 255); // Doing nothing but looking pretty
+  setAllLEDs(20, 28, 107); // Doing nothing but looking like a cutie pakootie
 }
 
 void gameStart() {
@@ -152,10 +152,10 @@ void displaySequence(int level) {
 bool checkUserSequence(int level) {
   for (int i = 0; i < level; i++) {
     if (userSequence[i] != sequence[i]) {
-      return false; // Oops, player messed up
+      return false; // Oops, player made a Womp Womp
     }
   }
-  return true; // Nailed it!
+  return true; // Damn, the player got it.
 }
 
 void setAllLEDs(int red, int green, int blue) {
