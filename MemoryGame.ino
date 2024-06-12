@@ -144,7 +144,11 @@ void setLEDColor(int index, int color) {
 }
 
 void highlightCurrentLED(int led) {
-  CircuitPlayground.setPixelColor(led, 255, 255, 255);
+  if (userColor[led] == -1) {
+    CircuitPlayground.setPixelColor(led, 255, 255, 255);
+  } else {
+    setLEDColor(led, userColor[led]);
+  }
 }
 
 void switchh() {
@@ -165,7 +169,7 @@ void clearUserSequence() {
 
 void leftButtonPress() {
   if (gameState) {
-    if (userSequence[currentLED] == -1) {
+    if (userColor[currentLED] == -1) {
       CircuitPlayground.setPixelColor(currentLED, 0, 0, 0);
     } else {
       setLEDColor(currentLED, userColor[currentLED]);
